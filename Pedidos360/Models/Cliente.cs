@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
 namespace Pedidos360.Models
 {
@@ -8,6 +9,9 @@ namespace Pedidos360.Models
 
         [Required(ErrorMessage = "El cliente debe tener un nombre")]
         public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El cliente debe tener una cédula física o jurídica")]
+        public string Cedula { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El cliente debe tener un correo electrónico")]
         [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]

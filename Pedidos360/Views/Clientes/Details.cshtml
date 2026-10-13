@@ -1,0 +1,35 @@
+﻿
+@model Pedidos360.Models.Cliente
+
+@{
+    ViewData["Title"] = "Detalles del cliente";
+}
+
+<div class="container mt-4">
+    <h1>Detalles del cliente</h1>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-3">Nombre</dt>
+        <dd class="col-sm-9">@Model.Nombre</dd>
+
+        <dt class="col-sm-3">Cédula</dt>
+        <dd class="col-sm-9">@Model.Cedula</dd>
+
+        <dt class="col-sm-3">Correo electrónico</dt>
+        <dd class="col-sm-9">@Model.Correo</dd>
+
+        <dt class="col-sm-3">Teléfono</dt>
+        <dd class="col-sm-9">@Model.Telefono</dd>
+
+        <dt class="col-sm-3">Dirección</dt>
+        <dd class="col-sm-9">@Model.Direccion</dd>
+    </dl>
+
+    <a asp-action="Edit" asp-route-id="@Model.Id"
+       class="btn btn-warning">Editar</a>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Volver a la lista
+    </a>
+</div>
