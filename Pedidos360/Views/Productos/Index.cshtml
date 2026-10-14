@@ -1,0 +1,91 @@
+@using System.Globalization
+@model IEnumerable<Pedidos360.Models.Producto>
+
+@{
+    ViewData["Title"] = "Productos";
+    var page = (int?)ViewData["Page"] ?? 1;
+    var totalPages = (int?)ViewData["TotalPages"] ?? 1;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Productos</h1>
+        <a asp-action="Create" class="btn btn-primary">Nuevo producto</a>
+    </div>
+
+    <form method="get" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-5">
+                <input type="text" name="nombre" value="@ViewData["BuscarNombre"]" class="form-control" placeholder="Buscar por nombre..." />
+            </div>
+            <div class="col-md-4">
+                @Html.DropDownList("categoriaId", (SelectList)ViewData["Categorias"], "-- Todas las categorías --", new { @class = "form-select" })
+            </div>
+            <div class="col-md-3">
+                <div class="input-group">
+                    <button class="btn btn-primary" type="submit">Filtrar</button>
+                    <a asp-action="Index" class="btn btn-secondary">Limpiar</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Impuesto %</th>
+                <th>Stock</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var p in Model)
+                {
+                    <tr>
+                        <td style="width:80px">
+                            @if (!string.IsNullOrWhiteSpace(p.ImagenUrl))
+                            {
+                                <img src="@p.ImagenUrl" alt="" class="img-thumbnail" style="max-width:72px;" />
+                            }
+                        </td>
+                        <td>@p.Nombre</td>
+                        <td>@p.Categoria?.Nombre</td>
+                        <td>@p.Precio.ToString("C", CultureInfo.CurrentCulture)</td>
+                        <td>@p.ImpuestoPorc</td>
+                        <td>@p.Stock</td>
+                        <td>@(p.Activo ? "Sí" : "No")</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-info btn-sm">Detalles</a>
+                            <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-warning btn-sm">Editar</a>
+                            <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-danger btn-sm">Eliminar</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center">No hay productos registrados.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav aria-label="Paginación">
+        <ul class="pagination">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == page ? "active" : "")">
+                    <a class="page-link" href="?page=@i&nombre=@ViewData["BuscarNombre"]&categoriaId=@ViewData["CategoriaActual"]">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>

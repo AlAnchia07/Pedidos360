@@ -1,0 +1,66 @@
+@model Pedidos360.Models.Producto
+
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="container mt-4">
+    <h1>Editar producto</h1>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            @Html.DropDownListFor(m => m.CategoriaId, (SelectList)ViewData["Categorias"], "-- Seleccione --", new { @class = "form-select" })
+            <span asp-validation-for="CategoriaId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Precio</label>
+            <input asp-for="Precio" class="form-control" />
+            <span asp-validation-for="Precio" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Impuesto (%)</label>
+            <input asp-for="ImpuestoPorc" class="form-control" />
+            <span asp-validation-for="ImpuestoPorc" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock</label>
+            <input asp-for="Stock" class="form-control" />
+            <span asp-validation-for="Stock" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen (subir para reemplazar)</label>
+            <input type="file" name="imagenFile" class="form-control" />
+            @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
+            {
+                <div class="mt-2">
+                    <img src="@Model.ImagenUrl" alt="" class="img-thumbnail" style="max-width:120px;" />
+                </div>
+            }
+        </div>
+
+        <div class="mb-3 form-check">
+            <input asp-for="Activo" class="form-check-input" />
+            <label class="form-check-label">Activo</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

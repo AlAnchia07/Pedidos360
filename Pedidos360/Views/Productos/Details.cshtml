@@ -1,0 +1,33 @@
+@model Pedidos360.Models.Producto
+
+@{
+    ViewData["Title"] = "Detalle Producto";
+}
+
+<div class="container mt-4">
+    <h1>Detalle producto</h1>
+
+    <div class="card mb-3">
+        <div class="row g-0">
+            <div class="col-md-4">
+                @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
+                {
+                    <img src="@Model.ImagenUrl" class="img-fluid rounded-start" alt="" />
+                }
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Nombre</h5>
+                    <p class="card-text"><strong>Categoría:</strong> @Model.Categoria?.Nombre</p>
+                    <p class="card-text"><strong>Precio:</strong> @Model.Precio.ToString("C", System.Globalization.CultureInfo.CurrentCulture)</p>
+                    <p class="card-text"><strong>Impuesto %:</strong> @Model.ImpuestoPorc</p>
+                    <p class="card-text"><strong>Stock:</strong> @Model.Stock</p>
+                    <p class="card-text"><strong>Activo:</strong> @(Model.Activo ? "Sí" : "No")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>

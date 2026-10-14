@@ -1,0 +1,19 @@
+@model Pedidos360.Models.Producto
+
+@{
+    ViewData["Title"] = "Eliminar Producto";
+}
+
+<div class="container mt-4">
+    <h1>Eliminar producto</h1>
+
+    <div class="alert alert-warning">
+        ¿Está seguro que desea eliminar el producto <strong>@Model.Nombre</strong>?
+    </div>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
