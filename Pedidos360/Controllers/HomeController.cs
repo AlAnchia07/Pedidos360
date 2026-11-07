@@ -1,21 +1,50 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Pedidos360.Data;
 using Pedidos360.Models;
 
 namespace Pedidos360.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private const int UmbralStockBajo = 10;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
+
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var vm = new DashboardViewModel
+            {
+                TotalProductos = await _context.Productos.CountAsync(p => p.Activo),
+                TotalClientes = await _context.Clientes.CountAsync(),
+                TotalPedidos = await _context.Pedidos.CountAsync(),
+                StockTotal = await _context.Productos.SumAsync(p => (int?)p.Stock) ?? 0,
+                BajoStock = await _context.Productos
+                    .Where(p => p.Stock <= UmbralStockBajo)
+                    .OrderBy(p => p.Stock)
+                    .Take(8)
+                    .Select(p => new ProductoBajoStock
+                    {
+                        ImagenUrl = p.ImagenUrl,
+                        Nombre = p.Nombre,
+                        Categoria = _context.Categorias
+                            .Where(c => c.Id == p.CategoriaId)
+                            .Select(c => c.Nombre).FirstOrDefault() ?? "—",
+                        Stock = p.Stock,
+                        Activo = p.Activo
+                    })
+                    .ToListAsync()
+            };
+
+            return View(vm);
         }
 
         public IActionResult Privacy()
