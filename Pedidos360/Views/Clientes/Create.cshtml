@@ -1,70 +1,63 @@
 ﻿
-@model Pedidos360.Models.Cliente
+@model Cliente
+@{ ViewData["Title"] = "Nuevo Cliente"; }
 
-@{
-    ViewData["Title"] = "Nuevo cliente";
-}
+<div class="form-page">
+    <h1 class="page-title">Nuevo Cliente</h1>
+    <div class="breadcrumb-mini">
+        <a asp-controller="Home" asp-action="Index">Inicio</a> /
+        <a asp-action="Index">Clientes</a> / Nuevo Cliente
+    </div>
 
-<div class="container mt-4">
-    <h1>Registrar cliente</h1>
-    <hr />
+    <div class="panel">
+        <h2 class="panel-title mb-0">Información del cliente</h2>
+        <p class="text-muted small mb-3">Completa los datos para registrar un nuevo cliente</p>
+        <hr class="mt-0 mb-4" />
 
-    <div class="row">
-        <div class="col-md-6">
-            <form asp-action="Create" method="post">
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger"></div>
+<form asp-action="Create" method="post" novalidate
+      data-alerta-titulo="CLIENTE GUARDADO CON ÉXITO"
+      data-alerta-detalle="El registro se guardó en la lista.">            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                <div class="mb-3">
-                    <label asp-for="Nombre" class="form-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre"
-                          class="text-danger"></span>
-                </div>
+            <div class="field">
+                <label asp-for="Nombre">Nombre Completo o Razón Social</label>
+                <input asp-for="Nombre" class="form-control" placeholder="Ej: Comercial San José" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
 
-                <div class="mb-3">
-                    <label asp-for="Cedula" class="form-label"></label>
-                    <input asp-for="Cedula" class="form-control" />
-                    <span asp-validation-for="Cedula"
-                          class="text-danger"></span>
-                </div>
+            <div class="field">
+                <label asp-for="Cedula">Cédula física o jurídica *</label>
+                <input asp-for="Cedula" class="form-control" placeholder="Ej: 3-101-123456" />
+                <span asp-validation-for="Cedula" class="text-danger small"></span>
+            </div>
 
-                <div class="mb-3">
-                    <label asp-for="Correo" class="form-label"></label>
-                    <input asp-for="Correo" class="form-control" />
-                    <span asp-validation-for="Correo"
-                          class="text-danger"></span>
-                </div>
+            <div class="field">
+                <label asp-for="Correo">Correo electrónico</label>
+                <input asp-for="Correo" class="form-control" placeholder="Ej: contacto@empresa.cr" />
+                <span asp-validation-for="Correo" class="text-danger small"></span>
+            </div>
 
-                <div class="mb-3">
-                    <label asp-for="Telefono" class="form-label"></label>
-                    <input asp-for="Telefono" class="form-control" />
-                    <span asp-validation-for="Telefono"
-                          class="text-danger"></span>
-                </div>
+            <div class="field">
+                <label asp-for="Telefono">Teléfono</label>
+                <input asp-for="Telefono" class="form-control" placeholder="Ej: 2222.1234" />
+                <span asp-validation-for="Telefono" class="text-danger small"></span>
+            </div>
 
-                <div class="mb-3">
-                    <label asp-for="Direccion" class="form-label"></label>
-                    <textarea asp-for="Direccion" class="form-control"
-                              rows="3"></textarea>
-                    <span asp-validation-for="Direccion"
-                          class="text-danger"></span>
-                </div>
+            <div class="field">
+                <label asp-for="Direccion">Dirección</label>
+                <input asp-for="Direccion" class="form-control" placeholder="Ej: San José, Barrio Escalante" />
+                <span asp-validation-for="Direccion" class="text-danger small"></span>
+            </div>
 
-                <button type="submit" class="btn btn-primary">
-                    Guardar cliente
+            <div class="form-actions">
+                <a asp-action="Index" class="btn btn-light border btn-sm">Cancelar</a>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-person-plus"></i> Guardar Cliente
                 </button>
-
-                <a asp-action="Index" class="btn btn-secondary">
-                    Volver a la lista
-                </a>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }

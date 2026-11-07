@@ -1,0 +1,201 @@
+﻿@using System.Globalization
+@model IEnumerable<Producto>
+@{
+    ViewData["Title"] = "Productos";
+    var buscar = ViewData["BuscarActual"] as string;
+    var estado = ViewData["EstadoActual"] as string;
+    var cr = new CultureInfo("es-CR");
+
+    // Si el controlador no envía totales, se calculan con la lista recibida
+    var totalProductos   = ViewData["TotalProductos"]   as int? ?? Model.Count();
+    var totalCategorias  = ViewData["TotalCategorias"]  as int? ?? Model.Select(p => p.CategoriaId).Distinct().Count();
+    var totalActivos     = ViewData["TotalActivos"]     as int? ?? Model.Count(p => p.Activo);
+    var totalInactivos   = ViewData["TotalInactivos"]   as int? ?? Model.Count(p => !p.Activo);
+}
+
+<h1 class="page-title">Productos</h1>
+<p class="page-subtitle small">Gestiona el catálogo de productos de tu empresa</p>
+
+<form method="get" asp-action="Index" class="panel toolbar mb-3">
+    <div class="search-field toolbar-search">
+        <input name="buscar" value="@buscar" type="search" class="form-control form-control-sm"
+               placeholder="Buscar por nombre de producto..." />
+        <button type="submit" class="search-btn" aria-label="Buscar"><i class="bi bi-search"></i></button>
+    </div>
+
+    <div>
+        <label class="toolbar-label" for="categoriaId">Categoría</label>
+        <select id="categoriaId" name="categoriaId" class="form-select form-select-sm"
+                asp-items="ViewBag.Categorias" onchange="this.form.submit()">
+            <option value="">Todas las categorías</option>
+        </select>
+    </div>
+
+    <div>
+        <label class="toolbar-label" for="estado">Estado</label>
+        <select id="estado" name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="" selected="@(string.IsNullOrEmpty(estado))">Todos</option>
+            <option value="activos" selected="@(estado == "activos")">Activos</option>
+            <option value="inactivos" selected="@(estado == "inactivos")">Inactivos</option>
+        </select>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary btn-sm ms-auto">
+        <i class="bi bi-plus-lg"></i> Nuevo producto
+    </a>
+</form>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-card-h">
+            <div class="stat-icon icon-azul"><i class="bi bi-box-seam"></i></div>
+            <div>
+                <div class="stat-value">@totalProductos</div>
+                <div class="stat-label">Total de productos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-card-h">
+            <div class="stat-icon icon-verde"><i class="bi bi-tag"></i></div>
+            <div>
+                <div class="stat-value">@totalCategorias</div>
+                <div class="stat-label">Categorías</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-card-h">
+            <div class="stat-icon icon-verde"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="stat-value">@totalActivos</div>
+                <div class="stat-label">Productos activos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-card-h">
+            <div class="stat-icon icon-rojo"><i class="bi bi-x-circle"></i></div>
+            <div>
+                <div class="stat-value">@totalInactivos</div>
+                <div class="stat-label">Productos inactivos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle tabla-productos mb-0">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Impuesto</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="productos-body">
+            @foreach (var p in Model)
+            {
+                <tr class="producto-row">
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(p.ImagenUrl))
+                        { <img src="@p.ImagenUrl" alt="@p.Nombre" class="thumb-lg" /> }
+                        else
+                        { <span class="thumb-vacio"><i class="bi bi-image"></i></span> }
+                    </td>
+                    <td class="fw-semibold">
+                        <a asp-action="Details" asp-route-id="@p.Id" class="link-nombre">@p.Nombre</a>
+                    </td>
+                    <td>@(p.Categoria?.Nombre ?? "—")</td>
+                    <td>@p.Precio.ToString("C2", cr)</td>
+                    <td>@p.ImpuestoPorc.ToString("0.##")%</td>
+                    <td>@p.Stock</td>
+                    <td>
+                        <span class="badge-estado @(p.Activo ? "badge-activo" : "badge-inactivo")">
+                            @(p.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </td>
+                    <td>
+                        <div class="acciones">
+                            <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-primary btn-sm btn-icon" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" data-eliminar="@p.Nombre"
+                                  data-alerta-titulo="Producto eliminado correctamente"
+                                  data-alerta-detalle="El registro se eliminó de la lista.">
+                                <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p class="text-center text-muted py-4 mb-0">No se encontraron productos.</p>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
+            <small id="productos-info" class="text-muted"></small>
+            <nav><ul id="productos-paginacion" class="pagination pagination-sm mb-0"></ul></nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        const filas = Array.from(document.querySelectorAll('#productos-body .producto-row'));
+        const info = document.getElementById('productos-info');
+        const pag = document.getElementById('productos-paginacion');
+        if (!filas.length || !pag) return;
+
+        const tamano = 6;
+        const totalPaginas = Math.ceil(filas.length / tamano);
+
+        function boton(texto, pagina, deshabilitado, activo) {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = texto;
+            a.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (!deshabilitado) mostrar(pagina);
+            });
+            li.appendChild(a);
+            return li;
+        }
+
+        function mostrar(p) {
+            const desde = (p - 1) * tamano;
+            const hasta = Math.min(desde + tamano, filas.length);
+            filas.forEach((f, i) => f.style.display = (i >= desde && i < hasta) ? '' : 'none');
+            info.textContent = 'Mostrando ' + (desde + 1) + ' - ' + hasta + ' de ' + filas.length + ' productos';
+
+            pag.innerHTML = '';
+            if (totalPaginas <= 1) return;
+            pag.appendChild(boton('‹', p - 1, p === 1, false));
+            const fin = Math.min(totalPaginas, Math.max(1, p - 2) + 4);
+            const inicio = Math.max(1, fin - 4);
+            for (let i = inicio; i <= fin; i++) pag.appendChild(boton(i, i, false, i === p));
+            pag.appendChild(boton('›', p + 1, p === totalPaginas, false));
+        }
+
+        mostrar(1);
+    })();
+</script>
+}

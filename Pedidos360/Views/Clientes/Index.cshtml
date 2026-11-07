@@ -1,79 +1,129 @@
-﻿
-@model IEnumerable<Pedidos360.Models.Cliente>
-
+﻿@model IEnumerable<Cliente>
 @{
     ViewData["Title"] = "Clientes";
+    var buscar = ViewData["BuscarActual"] as string;
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Clientes</h1>
-        <a asp-action="Create" class="btn btn-primary">
-            Nuevo cliente
+<h1 class="page-title">Clientes</h1>
+<p class="page-subtitle small">Administra la información de tus clientes</p>
+
+<div class="panel mb-4">
+    <h2 class="panel-title">Buscar Clientes</h2>
+    <form method="get" asp-action="Index">
+        <label for="buscar" class="form-label small">Nombre o Cédula</label>
+        <div class="search-field mb-3">
+            <input id="buscar" name="buscar" value="@buscar" type="search"
+                   class="form-control" placeholder="Buscar por nombre o cédula" />
+            <button type="submit" class="search-btn" aria-label="Buscar"><i class="bi bi-search"></i></button>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-sm me-2">
+            <i class="bi bi-person-plus"></i> Nuevo Cliente
         </a>
-    </div>
-    
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="input-group">
-        <input type="text"
-               name="buscar"
-               value="@ViewData["BuscarActual"]"
-               class="form-control"
-               placeholder="Buscar por nombre o cédula..." />
-
-        <button type="submit" class="btn btn-primary">
-            Buscar
-        </button>
-
-        <a asp-action="Index" class="btn btn-secondary">
-            Limpiar
+        <a asp-action="Index" class="btn btn-light border btn-sm">
+            <i class="bi bi-arrow-counterclockwise"></i> Limpiar Búsqueda
         </a>
-    </div>
-</form>
-
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Cédula</th>
-                <th>Correo electrónico</th>
-                <th>Teléfono</th>
-                <th>Dirección</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var cliente in Model)
-                {
-                    <tr>
-                        <td>@cliente.Nombre</td>
-                        <td>@cliente.Cedula</td>
-                        <td>@cliente.Correo</td>
-                        <td>@cliente.Telefono</td>
-                        <td>@cliente.Direccion</td>
-                        <td>
-                            <a asp-action="Details" asp-route-id="@cliente.Id"
-                               class="btn btn-info btn-sm">Detalles</a>
-
-                            <a asp-action="Edit" asp-route-id="@cliente.Id"
-                               class="btn btn-warning btn-sm">Editar</a>
-
-                            <a asp-action="Delete" asp-route-id="@cliente.Id"
-                               class="btn btn-danger btn-sm">Eliminar</a>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="6" class="text-center">
-                        No hay clientes registrados.
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    </form>
 </div>
+
+<div class="panel">
+    <h2 class="panel-title">Listado de Clientes</h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cédula</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="clientes-body">
+            @foreach (var c in Model)
+            {
+                <tr class="cliente-row">
+                    <td class="fw-semibold">@c.Nombre</td>
+                    <td>@c.Cedula</td>
+                    <td>@c.Correo</td>
+                    <td>@c.Telefono</td>
+<td class="text-end">
+    <div class="acciones">
+        <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-outline-secondary btn-sm btn-icon" title="Ver detalle">
+            <i class="bi bi-eye"></i>
+        </a>
+        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-primary btn-sm btn-icon" title="Editar">
+            <i class="bi bi-pencil-square"></i>
+        </a>
+        <form asp-action="Delete" asp-route-id="@c.Id" method="post" data-eliminar="@c.Nombre">
+            <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Eliminar">
+                <i class="bi bi-trash"></i>
+            </button>
+        </form>
+    </div>
+</td>                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p class="text-center text-muted py-3 mb-0">No se encontraron clientes.</p>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+            <small id="clientes-info" class="text-muted"></small>
+            <nav><ul id="clientes-paginacion" class="pagination pagination-sm mb-0"></ul></nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        const filas = Array.from(document.querySelectorAll('#clientes-body .cliente-row'));
+        const info = document.getElementById('clientes-info');
+        const pag = document.getElementById('clientes-paginacion');
+        if (!filas.length || !pag) return;
+
+        const tamano = 6;
+        const totalPaginas = Math.ceil(filas.length / tamano);
+        let actual = 1;
+
+        function boton(texto, pagina, deshabilitado, activo) {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = texto;
+            a.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (!deshabilitado) mostrar(pagina);
+            });
+            li.appendChild(a);
+            return li;
+        }
+
+        function mostrar(p) {
+            actual = p;
+            const desde = (p - 1) * tamano;
+            const hasta = Math.min(desde + tamano, filas.length);
+            filas.forEach((f, i) => f.style.display = (i >= desde && i < hasta) ? '' : 'none');
+            info.textContent = 'Mostrando ' + (desde + 1) + ' - ' + hasta + ' de ' + filas.length + ' clientes';
+
+            pag.innerHTML = '';
+            if (totalPaginas <= 1) return;
+            pag.appendChild(boton('‹', p - 1, p === 1, false));
+            const fin = Math.min(totalPaginas, Math.max(1, p - 2) + 4);
+            const inicio = Math.max(1, fin - 4);
+            for (let i = inicio; i <= fin; i++) pag.appendChild(boton(i, i, false, i === p));
+            pag.appendChild(boton('›', p + 1, p === totalPaginas, false));
+        }
+
+        mostrar(1);
+    })();
+</script>
+}

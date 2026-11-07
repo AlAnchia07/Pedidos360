@@ -1,14 +1,23 @@
-﻿@if (TempData["Exito"] != null)
+﻿<div id="alertas-js">
+@if (TempData["Exito"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Exito"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    <div class="alerta-p360 alerta-ok" role="alert">
+        <i class="bi bi-check-circle alerta-icono"></i>
+        <div class="alerta-texto">
+            <div class="alerta-titulo">@TempData["Exito"]</div>
+            @if (TempData["ExitoDetalle"] != null) { <div class="alerta-detalle">@TempData["ExitoDetalle"]</div> }
+        </div>
+        <button type="button" class="alerta-cerrar" aria-label="Cerrar" onclick="this.parentElement.remove()"><i class="bi bi-x-lg"></i></button>
     </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    <div class="alerta-p360 alerta-error" role="alert">
+        <i class="bi bi-x-circle alerta-icono"></i>
+        <div class="alerta-texto">
+            <div class="alerta-titulo">@TempData["Error"]</div>
+        </div>
+        <button type="button" class="alerta-cerrar" aria-label="Cerrar" onclick="this.parentElement.remove()"><i class="bi bi-x-lg"></i></button>
     </div>
 }
+</div>

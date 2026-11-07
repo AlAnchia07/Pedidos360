@@ -1,72 +1,70 @@
 ﻿
-@model Pedidos360.Models.Cliente
+@model Cliente
+@{ ViewData["Title"] = "Editar Cliente"; }
 
-@{
-    ViewData["Title"] = "Editar cliente";
-}
+<div class="form-page">
+    <h1 class="page-title">Editar Cliente</h1>
+    <div class="breadcrumb-mini">
+        <a asp-controller="Home" asp-action="Index">Inicio</a> /
+        <a asp-action="Index">Clientes</a> / Editar Cliente
+    </div>
 
-<div class="container mt-4">
-    <h1>Editar cliente</h1>
-    <hr />
-
-    <div class="row">
-        <div class="col-md-6">
-            <form asp-action="Edit" method="post">
-                <input type="hidden" asp-for="Id" />
-
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger"></div>
-
-                <div class="mb-3">
-                    <label asp-for="Nombre" class="form-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Cedula" class="form-label"></label>
-                    <input asp-for="Cedula" class="form-control" />
-                    <span asp-validation-for="Cedula"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Correo" class="form-label"></label>
-                    <input asp-for="Correo" class="form-control" />
-                    <span asp-validation-for="Correo"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Telefono" class="form-label"></label>
-                    <input asp-for="Telefono" class="form-control" />
-                    <span asp-validation-for="Telefono"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Direccion" class="form-label"></label>
-                    <textarea asp-for="Direccion" class="form-control"
-                              rows="3"></textarea>
-                    <span asp-validation-for="Direccion"
-                          class="text-danger"></span>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    Guardar cambios
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary">
-                    Cancelar
-                </a>
-            </form>
+    <div class="panel">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h2 class="panel-title mb-0">@(string.IsNullOrWhiteSpace(Model.Nombre) ? "Cliente" : Model.Nombre)</h2>
+                <p class="text-muted small mb-3">Información del cliente</p>
+            </div>
+            <span class="badge-registrado">Registrado</span>
         </div>
+        <hr class="mt-0 mb-4" />
+
+        <form asp-action="Edit" method="post" novalidate
+              data-alerta-titulo="Cliente actualizado con éxito"
+              data-alerta-detalle="Los cambios se guardaron en la lista.">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="field">
+                <label asp-for="Nombre">Nombre Completo o Razón Social</label>
+                <input asp-for="Nombre" class="form-control" placeholder="Ej: Comercial San José" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Cedula">Cédula física o jurídica *</label>
+                <input asp-for="Cedula" class="form-control" placeholder="Ej: 3-101-123456" />
+                <span asp-validation-for="Cedula" class="text-danger small"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Correo">Correo electrónico</label>
+                <input asp-for="Correo" class="form-control" placeholder="Ej: contacto@empresa.cr" />
+                <span asp-validation-for="Correo" class="text-danger small"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Telefono">Teléfono</label>
+                <input asp-for="Telefono" class="form-control" placeholder="Ej: 2222.1234" />
+                <span asp-validation-for="Telefono" class="text-danger small"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Direccion">Dirección</label>
+                <input asp-for="Direccion" class="form-control" placeholder="Ej: San José, Barrio Escalante" />
+                <span asp-validation-for="Direccion" class="text-danger small"></span>
+            </div>
+
+            <div class="form-actions">
+                <a asp-action="Index" class="btn btn-light border btn-sm">Cancelar</a>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-floppy"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }

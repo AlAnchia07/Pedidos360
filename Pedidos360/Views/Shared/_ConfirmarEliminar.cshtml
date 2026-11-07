@@ -1,0 +1,26 @@
+﻿<div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-confirmar">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="d-flex gap-3 align-items-center mb-3">
+                    <div class="icono-eliminar"><i class="bi bi-trash"></i></div>
+                    <div>
+                        <div class="fw-bold">¿Eliminar este registro?</div>
+                        <div class="text-muted small">Esta acción requiere confirmación.</div>
+                    </div>
+                </div>
+                <p class="small mb-1">
+                    ¿Estás seguro de que deseas eliminar <strong id="eliminar-nombre"></strong>?
+                    Esta acción no se puede deshacer.
+                </p>
+                <p class="small text-muted mb-3">Si tiene pedidos asociados, también se eliminarán.</p>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-light border btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="btn-confirmar-eliminar" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i> Sí, Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
