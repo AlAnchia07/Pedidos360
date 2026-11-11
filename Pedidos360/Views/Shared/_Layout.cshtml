@@ -1,4 +1,4 @@
-﻿@{
+@{
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
     string Active(string c) => ctrl == c ? "active" : "";
     var autenticado = User.Identity?.IsAuthenticated == true;
@@ -31,6 +31,7 @@
                 {
                     <a asp-controller="Home" asp-action="Index" class="nav-link-item @Active("Home")"><i class="bi bi-grid"></i> Inicio</a>
                     <a asp-controller="Productos" asp-action="Index" class="nav-link-item @Active("Productos")"><i class="bi bi-box-seam"></i> Productos</a>
+                    <a asp-controller="Categorias" asp-action="Index" class="nav-link-item @Active("Categorias")"><i class="bi bi-tags"></i> Categorías</a>
                     <a asp-controller="Clientes" asp-action="Index" class="nav-link-item @Active("Clientes")"><i class="bi bi-people"></i> Clientes</a>
                     <a asp-controller="Pedidos" asp-action="Index" class="nav-link-item @Active("Pedidos")"><i class="bi bi-cart3"></i> Pedidos</a>
 
