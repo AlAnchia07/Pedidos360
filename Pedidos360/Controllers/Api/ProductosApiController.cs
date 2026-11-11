@@ -26,7 +26,7 @@ namespace Pedidos360.Controllers.Api
             limit = Math.Min(Math.Max(limit, 1), 50);
 
             var items = await _context.Productos
-                .Where(p => p.Nombre.Contains(q))
+                .Where(p => p.Nombre.Contains(q) && p.Activo && p.Stock > 0)
                 .OrderBy(p => p.Nombre)
                 .Take(limit)
                 .Select(p => new

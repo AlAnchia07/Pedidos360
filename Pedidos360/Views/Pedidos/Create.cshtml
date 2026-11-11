@@ -1,0 +1,371 @@
+﻿
+@{
+    ViewData["Title"] = "Registrar pedido";
+}
+
+<h1>Registrar pedido</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+
+        <h4>Información del pedido</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Cliente</label>            
+            <select id="ClienteId" class="form-select">
+                <option value="">Seleccione un cliente</option>
+
+                @foreach (var cliente in ViewBag.Clientes)
+                {
+                   <option value="@cliente.Id">
+                       @cliente.Nombre
+                   </option>
+                }
+            </select>
+
+           
+            
+        </div>
+
+        <hr />
+
+        <h4>Productos</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Buscar producto</label>
+            <input type="text"
+                   id="BuscarProducto"
+                   class="form-control"
+                   placeholder="Escriba el nombre del producto..." />
+        </div>
+
+        <div id="ResultadosProductos" class="list-group mb-3">
+        </div>
+
+        <h4>Detalle del pedido</h4>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Descuento</th>
+                    <th>Impuesto</th>
+                    <th>Total</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody id="DetallePedido">
+            </tbody>
+        </table>
+
+        <hr />
+
+        <h4>Resumen del pedido</h4>
+
+        <p>Subtotal: <strong id="Subtotal">₡0.00</strong></p>
+        <p>Impuestos: <strong id="Impuestos">₡0.00</strong></p>
+        <h4>Total: <strong id="Total">₡0.00</strong></h4>
+
+        <button type="button" class="btn btn-success" id="ConfirmarPedido">
+            Confirmar pedido
+        </button>
+        @Html.AntiForgeryToken()
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Volver
+        </a>
+
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Lista de productos agregados al pedido
+            let productosPedido = [];
+
+            // BUSCAR PRODUCTOS
+            $("#BuscarProducto").on("input", function () {
+                let texto = $(this).val();
+
+                if (texto.length < 2) {
+                    $("#ResultadosProductos").empty();
+                    return;
+                }
+
+                $.ajax({
+                    url: "/api/productos/buscar",
+                    type: "GET",
+                    data: { q: texto },
+
+                    success: function (productos) {
+                        $("#ResultadosProductos").empty();
+
+                        productos.forEach(function (producto) {
+                            let elemento = `
+                                <button type="button"
+                                    class="list-group-item list-group-item-action agregar-producto"
+                                    data-id="${producto.id}"
+                                    data-nombre="${producto.nombre}"
+                                    data-precio="${producto.precio}"
+                                    data-impuesto="${producto.impuesto}"
+                                    data-stock="${producto.stock}">
+                                    ${producto.nombre}
+                                    - ₡${producto.precio}
+                                    (Stock: ${producto.stock})
+                                </button>
+                            `;
+
+                            $("#ResultadosProductos").append(elemento);
+                        });
+                    },
+
+                    error: function () {
+                        $("#ResultadosProductos").empty();
+                        console.log("Error al buscar productos");
+                    }
+                });
+            });
+
+            // AGREGAR PRODUCTO
+            $(document).on("click", ".agregar-producto", function () {
+
+                let id = parseInt($(this).data("id"));
+                let nombre = $(this).data("nombre");
+                let precio = parseFloat($(this).data("precio"));
+                let impuesto = parseFloat($(this).data("impuesto"));
+                let stock = parseInt($(this).data("stock"));
+
+                let productoExistente = productosPedido.find(p => p.id === id);
+
+                if (productoExistente) {
+                    alert("Este producto ya está agregado. Puedes modificar su cantidad en el detalle.");
+                    return;
+                }
+
+                productosPedido.push({
+                    id: id,
+                    nombre: nombre,
+                    precio: precio,
+                    impuesto: impuesto,
+                    stock: stock,
+                    cantidad: 1,
+                    descuento: 0
+                });
+
+                mostrarDetalle();
+
+                $("#BuscarProducto").val("");
+                $("#ResultadosProductos").empty();
+            });
+
+            // MOSTRAR DETALLE
+            function mostrarDetalle() {
+
+                $("#DetallePedido").empty();
+
+                productosPedido.forEach(function (producto) {
+
+                    let fila = `
+                        <tr>
+                            <td>${producto.nombre}</td>
+                            <td>₡${producto.precio.toFixed(2)}</td>
+
+                            <td>
+                                <input type="number"
+                                    class="form-control cantidad-producto"
+                                    data-id="${producto.id}"
+                                    value="${producto.cantidad}"
+                                    min="1"
+                                    max="${producto.stock}">
+                                <small>Stock: ${producto.stock}</small>
+                            </td>
+
+                            <td>
+                                <input type="number"
+                                    class="form-control descuento-producto"
+                                    data-id="${producto.id}"
+                                    value="${producto.descuento}"
+                                    min="0"
+                                    step="0.01">
+                            </td>
+
+                            <td>${producto.impuesto}%</td>
+
+                            <td class="total-linea" data-id="${producto.id}">
+                                ₡0.00
+                            </td>
+
+                            <td>
+                                <button type="button"
+                                    class="btn btn-danger btn-sm eliminar-producto"
+                                    data-id="${producto.id}">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+
+                    $("#DetallePedido").append(fila);
+                });
+
+                calcularTotales();
+            }
+
+            // MODIFICAR CANTIDAD
+            $(document).on("change", ".cantidad-producto", function () {
+
+                let id = parseInt($(this).data("id"));
+                let cantidad = parseInt($(this).val());
+
+                let producto = productosPedido.find(p => p.id === id);
+
+                if (!producto) return;
+
+                if (isNaN(cantidad) || cantidad < 1 || cantidad > producto.stock) {
+                    alert("La cantidad debe ser mayor a cero y no puede superar el stock disponible.");
+                    $(this).val(producto.cantidad);
+                    return;
+                }
+
+                producto.cantidad = cantidad;
+                calcularTotales();
+            });
+
+            // MODIFICAR DESCUENTO
+            $(document).on("change", ".descuento-producto", function () {
+
+                let id = parseInt($(this).data("id"));
+                let descuento = parseFloat($(this).val());
+
+                let producto = productosPedido.find(p => p.id === id);
+
+                if (!producto) return;
+
+                let subtotalLinea = producto.precio * producto.cantidad;
+
+                if (isNaN(descuento) || descuento < 0 || descuento > subtotalLinea) {
+                    alert("El descuento no puede ser negativo ni superar el subtotal del producto.");
+                    $(this).val(producto.descuento);
+                    return;
+                }
+
+                producto.descuento = descuento;
+                calcularTotales();
+            });
+
+            // ELIMINAR PRODUCTO
+            $(document).on("click", ".eliminar-producto", function () {
+
+                let id = parseInt($(this).data("id"));
+
+                productosPedido = productosPedido.filter(p => p.id !== id);
+
+                mostrarDetalle();
+            });
+
+            // CALCULAR TOTALES
+            function calcularTotales() {
+
+                let subtotal = 0;
+                let impuestos = 0;
+
+                productosPedido.forEach(function (producto) {
+
+                    let subtotalLinea =
+                        (producto.precio * producto.cantidad) - producto.descuento;
+
+                    let impuestoLinea =
+                        subtotalLinea * (producto.impuesto / 100);
+
+                    let totalLinea = subtotalLinea + impuestoLinea;
+
+                    subtotal += subtotalLinea;
+                    impuestos += impuestoLinea;
+
+                    $(".total-linea[data-id='" + producto.id + "']")
+                        .text("₡" + totalLinea.toFixed(2));
+                });
+
+                let total = subtotal + impuestos;
+
+                $("#Subtotal").text("₡" + subtotal.toFixed(2));
+                $("#Impuestos").text("₡" + impuestos.toFixed(2));
+                $("#Total").text("₡" + total.toFixed(2));
+            }
+
+            // CONFIRMAR Y GUARDAR PEDIDO
+            $("#ConfirmarPedido").on("click", function () {
+
+                let clienteId = parseInt($("#ClienteId").val());
+
+                if (isNaN(clienteId) || clienteId <= 0) {
+                    alert("Debe seleccionar un cliente.");
+                    return;
+                }
+
+                if (productosPedido.length === 0) {
+                    alert("Debe agregar al menos un producto.");
+                    return;
+                }
+
+                let pedido = {
+                    clienteId: clienteId,
+                    lineas: productosPedido.map(function (producto) {
+                        return {
+                            productoId: producto.id,
+                            cantidad: producto.cantidad,
+                            descuento: producto.descuento
+                        };
+                    })
+                };
+
+                let token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (!token) {
+                    alert("No se encontró el token de seguridad. Recargue la página.");
+                    return;
+                }
+
+                let boton = $("#ConfirmarPedido");
+                boton.prop("disabled", true).text("Guardando...");
+
+                $.ajax({
+                    url: "/Pedidos/Create",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: {
+                        "RequestVerificationToken": token
+                    },
+                    data: JSON.stringify(pedido),
+
+                    success: function (respuesta) {
+                        alert(respuesta.mensaje);
+                        window.location.href = "/Pedidos/Index";
+                    },
+
+                    error: function (xhr) {
+                        let mensaje = xhr.responseJSON?.mensaje
+                            || "No se pudo registrar el pedido.";
+
+                        alert(mensaje);
+                        boton.prop("disabled", false).text("Confirmar pedido");
+                    }
+                });
+            });
+
+        });
+    </script>
+}
+
+
+
