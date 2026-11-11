@@ -12,7 +12,7 @@ namespace Pedidos360.Controllers;
 public class ProductosController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private const int PageSize = 10;
+   
 
     public ProductosController(ApplicationDbContext context)
     {
@@ -20,41 +20,37 @@ public class ProductosController : Controller
     }
 
     public async Task<IActionResult> Index(
-        string? nombre,
+        string? buscar,
         int? categoriaId,
-        int page = 1)
+        string? estado)
     {
-        if (page < 1) page = 1;
-
         var query = _context.Productos
             .Include(p => p.Categoria)
             .AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(nombre))
-        {
-            query = query.Where(p => p.Nombre.Contains(nombre));
-        }
+        if (!string.IsNullOrWhiteSpace(buscar))
+            query = query.Where(p => p.Nombre.Contains(buscar));
 
         if (categoriaId.HasValue && categoriaId > 0)
-        {
             query = query.Where(p => p.CategoriaId == categoriaId);
-        }
 
-        var total = await query.CountAsync();
-        var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
+        if (estado == "activos")
+            query = query.Where(p => p.Activo);
+        else if (estado == "inactivos")
+            query = query.Where(p => !p.Activo);
 
-        if (page > totalPages) page = totalPages;
+        // La paginación la hace la vista con JavaScript, por eso se envía la lista completa filtrada
+        var productos = await query.OrderBy(p => p.Nombre).ToListAsync();
 
-        var productos = await query
-            .OrderBy(p => p.Nombre)
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
+        // Totales de las tarjetas (de todo el catálogo, sin filtros)
+        ViewData["TotalProductos"] = await _context.Productos.CountAsync();
+        ViewData["TotalCategorias"] = await _context.Categorias.CountAsync();
+        ViewData["TotalActivos"] = await _context.Productos.CountAsync(p => p.Activo);
+        ViewData["TotalInactivos"] = await _context.Productos.CountAsync(p => !p.Activo);
 
-        ViewData["BuscarNombre"] = nombre;
+        ViewData["BuscarActual"] = buscar;
+        ViewData["EstadoActual"] = estado;
         ViewData["CategoriaActual"] = categoriaId;
-        ViewData["Page"] = page;
-        ViewData["TotalPages"] = totalPages;
         ViewData["Categorias"] = new SelectList(
             await _context.Categorias.OrderBy(c => c.Nombre).ToListAsync(),
             "Id",

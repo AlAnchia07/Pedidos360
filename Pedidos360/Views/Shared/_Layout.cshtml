@@ -1,6 +1,11 @@
 ﻿@{
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
     string Active(string c) => ctrl == c ? "active" : "";
+    var autenticado = User.Identity?.IsAuthenticated == true;
+    var rol = User.IsInRole("Admin") ? "Admin"
+            : User.IsInRole("Ventas") ? "Ventas"
+            : User.IsInRole("Operaciones") ? "Operaciones"
+            : "Sin rol";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -13,49 +18,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Pedidos360</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
-                            </li>
-                        }
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        
-                       @if (User.Identity?.IsAuthenticated == true)
-                       {
-                           <li class="nav-item">
-                               <a class="nav-link text-dark" asp-controller="Clientes" asp-action="Index">Clientes</a>
-                           </li>
-                           <li class="nav-item">
-                               <a class="nav-link text-dark" asp-controller="Productos" asp-action="Index">Productos</a>
-                           </li>
-                       }
-
-                       @if (User.IsInRole("Admin"))
-                       {
-                           <li class="nav-item">
-                               <a class="nav-link text-dark" asp-controller="Users" asp-action="Index">Usuarios</a>
-                           </li>
-                       }
-
-                       <li class="nav-item">
-                           <a class="nav-link text-dark"
-                              asp-area=""
-                              asp-controller="Pedidos"
-                              asp-action="Index">Pedidos</a>
-                       </li>
     <div class="app">
 
         <aside id="sidebar" class="sidebar">
@@ -64,44 +26,32 @@
                 <small>Inventario y pedidos B2B</small>
             </div>
 
-
-
-                        
- 
-
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <span class="navbar-text">@User.Identity.Name (@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Ventas") ? "Ventas" : User.IsInRole("Operaciones") ? "Operaciones" : "Sin rol"))</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-secondary btn-sm mt-1">Cerrar sesión</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
-                            </li>
-                        }
-                    </ul>
             <nav class="sidebar-nav">
-                <a asp-controller="Home" asp-action="Index" class="nav-link-item @Active("Home")"><i class="bi bi-grid"></i> Inicio</a>
-                <a asp-controller="Productos" asp-action="Index" class="nav-link-item @Active("Productos")"><i class="bi bi-box-seam"></i> Productos</a>
-                <a asp-controller="Clientes" asp-action="Index" class="nav-link-item @Active("Clientes")"><i class="bi bi-people"></i> Clientes</a>
-                <a asp-controller="Pedidos" asp-action="Index" class="nav-link-item @Active("Pedidos")"><i class="bi bi-cart3"></i> Pedidos</a>
+                @if (autenticado)
+                {
+                    <a asp-controller="Home" asp-action="Index" class="nav-link-item @Active("Home")"><i class="bi bi-grid"></i> Inicio</a>
+                    <a asp-controller="Productos" asp-action="Index" class="nav-link-item @Active("Productos")"><i class="bi bi-box-seam"></i> Productos</a>
+                    <a asp-controller="Clientes" asp-action="Index" class="nav-link-item @Active("Clientes")"><i class="bi bi-people"></i> Clientes</a>
+                    <a asp-controller="Pedidos" asp-action="Index" class="nav-link-item @Active("Pedidos")"><i class="bi bi-cart3"></i> Pedidos</a>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Users" asp-action="Index" class="nav-link-item @Active("Users")"><i class="bi bi-person-gear"></i> Usuarios</a>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="nav-link-item"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+                }
             </nav>
 
             <div class="sidebar-footer">
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (autenticado)
                 {
+                    <div class="small text-white-50 px-3 mb-2">@User.Identity!.Name (@rol)</div>
                     <form asp-controller="Account" asp-action="Logout" method="post">
                         <button type="submit" class="nav-link-item w-100 border-0 bg-transparent">
-                            <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+                            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                         </button>
                     </form>
                 }
@@ -118,9 +68,9 @@
                     <input type="search" placeholder="Buscar en el Sistema" />
                 </div>
                 <div class="topbar-user">
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (autenticado)
                     {
-                        <span class="d-none d-md-inline me-2">@User.Identity.Name</span>
+                        <span class="d-none d-md-inline me-2">@User.Identity!.Name</span>
                     }
                     <i class="bi bi-person-circle"></i>
                 </div>
