@@ -30,6 +30,10 @@ namespace Pedidos360.Data
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<Producto>()
+                .Property(p => p.Stock)
+                .IsConcurrencyToken();
+
+            modelBuilder.Entity<Producto>()
                 .Property(p => p.ImpuestoPorc)
                 .HasPrecision(5, 2);
 

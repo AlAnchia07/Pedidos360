@@ -1,11 +1,14 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pedidos360.Data;
 using Pedidos360.Models;
+using Pedidos360.Security;
 
 namespace Pedidos360.Controllers
 {
+    [Authorize(Roles = RoleNames.AllRoles)]
     public class ClientesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -54,6 +57,7 @@ namespace Pedidos360.Controllers
         }
 
         // GET: Clientes/Create
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         public IActionResult Create()
         {
             return View();
@@ -61,6 +65,7 @@ namespace Pedidos360.Controllers
 
         // POST: Clientes/Create
         [HttpPost]
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Cliente cliente)
         {
@@ -76,6 +81,7 @@ namespace Pedidos360.Controllers
         }
 
         // GET: Clientes/Edit/5
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -95,6 +101,7 @@ namespace Pedidos360.Controllers
 
         // POST: Clientes/Edit/5
         [HttpPost]
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Cliente cliente)
         {
@@ -127,6 +134,7 @@ namespace Pedidos360.Controllers
         }
 
         // GET: Clientes/Delete/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -147,6 +155,7 @@ namespace Pedidos360.Controllers
 
         // POST: Clientes/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = RoleNames.Admin)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

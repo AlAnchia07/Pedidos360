@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pedidos360.Data;
@@ -6,6 +7,7 @@ using Pedidos360.Models;
 
 namespace Pedidos360.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private const int UmbralStockBajo = 10;
@@ -47,11 +49,13 @@ namespace Pedidos360.Controllers
             return View(vm);
         }
 
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

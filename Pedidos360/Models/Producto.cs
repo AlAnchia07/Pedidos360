@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Pedidos360.Models
 {
@@ -11,6 +13,7 @@ namespace Pedidos360.Models
 
         [Required(ErrorMessage = "El producto debe tener una categoría")]
         public int CategoriaId { get; set; }
+
         public Categoria? Categoria { get; set; }
 
         [Range(0.01, double.MaxValue, ErrorMessage = "El precio del producto debe ser mayor a 0")]
@@ -21,12 +24,12 @@ namespace Pedidos360.Models
 
         [Required(ErrorMessage = "El producto debe tener una cantidad en stock")]
         [Range(0, int.MaxValue, ErrorMessage = "La cantidad en stock del producto no puede ser negativa")]
+        [ConcurrencyCheck]
         public int Stock { get; set; }
 
         [Required(ErrorMessage = "El producto debe tener una imagen")]
         public string ImagenUrl { get; set; } = string.Empty;
 
         public bool Activo { get; set; } = true;
-
     }
 }
