@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Pedidos360.Data;
 using Pedidos360.Models;
 using Pedidos360.Security;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pedidos360.Controllers;
 
@@ -269,5 +270,49 @@ public class ProductosController : Controller
             ".webp" => "image/webp",
             _ => "application/octet-stream"
         };
+    }
+
+    [HttpGet]
+    [Authorize(Roles = RoleNames.AdminOrOperaciones)]
+    public async Task<IActionResult> EditStock(int id)
+    {
+        var producto = await _context.Productos
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (producto == null)
+            return NotFound();
+
+        var modelo = new EditarStockDto
+        {
+            Id = producto.Id,
+            Nombre = producto.Nombre,
+            StockActual = producto.Stock,
+            NuevoStock = producto.Stock
+        };
+
+        return View(modelo);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = RoleNames.AdminOrOperaciones)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditStock(EditarStockDto modelo)
+    {
+        if (!ModelState.IsValid)
+            return View(modelo);
+
+        var producto = await _context.Productos
+            .FirstOrDefaultAsync(p => p.Id == modelo.Id);
+
+        if (producto == null)
+            return NotFound();
+
+        producto.Stock = modelo.NuevoStock;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Mensaje"] = "Stock actualizado correctamente.";
+
+        return RedirectToAction(nameof(Index));
     }
 }

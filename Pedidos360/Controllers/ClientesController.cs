@@ -134,7 +134,7 @@ namespace Pedidos360.Controllers
         }
 
         // GET: Clientes/Delete/5
-        [Authorize(Roles = RoleNames.Admin)]
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -155,7 +155,7 @@ namespace Pedidos360.Controllers
 
         // POST: Clientes/Delete/5
         [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = RoleNames.Admin)]
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

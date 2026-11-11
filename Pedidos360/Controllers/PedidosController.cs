@@ -1,15 +1,16 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pedidos360.Data;
-using Pedidos360.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Pedidos360.DTOs;
+using Pedidos360.Models;
+using Pedidos360.Security;
 
 namespace Pedidos360.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = RoleNames.AllRoles)]
     public class PedidosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -56,6 +57,7 @@ namespace Pedidos360.Controllers
 
 
         // GET: Pedidos/Create
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         public async Task<IActionResult> Create()
         {
             ViewBag.Clientes = await _context.Clientes
@@ -67,6 +69,7 @@ namespace Pedidos360.Controllers
 
         // POST: Pedidos/Create
         [HttpPost]
+        [Authorize(Roles = RoleNames.AdminAndSales)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([FromBody] PedidoCrearDto dto)
         {

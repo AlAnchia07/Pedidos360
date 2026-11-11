@@ -40,10 +40,13 @@
             <option value="inactivos" selected="@(estado == "inactivos")">Inactivos</option>
         </select>
     </div>
-
-    <a asp-action="Create" class="btn btn-primary btn-sm ms-auto">
-        <i class="bi bi-plus-lg"></i> Nuevo producto
-    </a>
+    
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary btn-sm ms-auto">
+            <i class="bi bi-plus-lg"></i> Nuevo producto
+        </a>
+    }
 </form>
 
 <div class="row g-3 mb-3">
@@ -97,7 +100,7 @@
                     <th>Impuesto</th>
                     <th>Stock</th>
                     <th>Estado</th>
-                    <th>Acciones</th>
+                    <th>Acciones</th> 
                 </tr>
             </thead>
             <tbody id="productos-body">
@@ -109,9 +112,19 @@
                             {
                                 <img src="@p.ImagenUrl" alt="@p.Nombre" class="thumb-lg" />
                             }
+                            else if (p.ImagenDatos != null && p.ImagenDatos.Length > 0)
+                            {
+                                var imagenBase64 = Convert.ToBase64String(p.ImagenDatos);
+
+                                <img src="data:@p.ImagenContentType;base64,@imagenBase64"
+                                     alt="@p.Nombre"
+                                     class="thumb-lg" />
+                            }
                             else
                             {
-                                <span class="thumb-vacio"><i class="bi bi-image"></i></span>
+                                <span class="thumb-vacio">
+                                    <i class="bi bi-image"></i>
+                                </span>
                             }
                         </td>
                         <td class="fw-semibold">
@@ -127,18 +140,38 @@
                             </span>
                         </td>
                         <td>
+
                             <div class="acciones">
-                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-primary btn-sm btn-icon" title="Editar">
-                                    <i class="bi bi-pencil-square"></i>
+
+                                <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-outline-secondary btn-sm btn-icon" title="Consultar">
+                                    <i class="bi bi-eye"></i>
                                 </a>
-                                <form asp-action="Delete" asp-route-id="@p.Id" method="post" data-eliminar="@p.Nombre"
-                                      data-alerta-titulo="Producto eliminado correctamente"
-                                      data-alerta-detalle="El registro se eliminó de la lista.">
-                                    <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
+
+                                @if (User.IsInRole("Admin") || User.IsInRole("Operaciones"))
+                                {
+                                    <a asp-action="EditStock" asp-route-id="@p.Id" class="btn btn-success btn-sm btn-icon" title="Editar Stock">
+                                        <i class="bi bi-box"></i>
+                                    </a>
+                                }
+                                
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-primary btn-sm btn-icon" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <form asp-action="Delete" asp-route-id="@p.Id" method="post" data-eliminar="@p.Nombre"
+                                          data-alerta-titulo="Producto eliminado correctamente"
+                                          data-alerta-detalle="El registro se eliminó de la lista.">
+                                        <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                              
+                             </div>   
+                            
+                           
                         </td>
                     </tr>
                 }

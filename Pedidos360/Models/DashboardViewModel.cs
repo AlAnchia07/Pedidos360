@@ -12,6 +12,10 @@
     public class ProductoBajoStock
     {
         public string ImagenUrl { get; set; } = string.Empty;
+
+        public byte[]? ImagenDatos { get; set; }
+
+        public string? ImagenContentType{ get; set; } = string.Empty;
         public string Nombre { get; set; } = string.Empty;
         public string Categoria { get; set; } = string.Empty;
         public int Stock { get; set; }

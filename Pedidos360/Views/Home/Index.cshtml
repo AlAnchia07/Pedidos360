@@ -37,11 +37,15 @@
     </div>
 </div>
 
-<div class="panel mb-4">
-    <h2 class="panel-title">Accesos rápidos</h2>
-    <a asp-controller="Productos" asp-action="Create" class="btn btn-primary w-100 mb-2">+ Nuevo Producto</a>
-    <a asp-controller="Clientes" asp-action="Create" class="btn btn-outline-secondary w-100">+ Nuevo Cliente</a>
-</div>
+@if (User.IsInRole("Admin"))
+{
+    <div class="panel mb-4">
+        <h2 class="panel-title">Accesos rápidos</h2>
+        <a asp-controller="Productos" asp-action="Create" class="btn btn-primary w-100 mb-2">+ Nuevo Producto</a>
+        <a asp-controller="Clientes" asp-action="Create" class="btn btn-outline-secondary w-100">+ Nuevo Cliente</a>
+    </div>
+}
+
 
 <div class="panel">
     <h2 class="panel-title">Productos con bajo Stock</h2>
@@ -53,16 +57,26 @@
             <tbody>
                 @foreach (var p in Model.BajoStock)
                 {
-                    <tr>
+                    <tr style="width:80px">
                         <td>
                             @if (!string.IsNullOrWhiteSpace(p.ImagenUrl))
                             {
-                                <img src="@p.ImagenUrl" alt="@p.Nombre" class="thumb" />
+                                <img src="@p.ImagenUrl" alt="@p.Nombre" class="thumb-lg" style="width:45px" />
+                            }
+                            else if (p.ImagenDatos != null && p.ImagenDatos.Length > 0)
+                            {
+                                var imagenBase64 = Convert.ToBase64String(p.ImagenDatos);
+
+                                <img src="data:@p.ImagenContentType;base64,@imagenBase64"
+                                     alt="@p.Nombre"
+                                     class="thumb-lg"
+                                     style="width:45px" />
                             }
                             else
                             {
-
-                                <span class="text-muted">—</span>
+                                <span class="thumb-vacio">
+                                    <i class="bi bi-image"></i>
+                                </span>
                             }
                         </td>
                         <td>@p.Nombre</td>

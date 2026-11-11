@@ -1,6 +1,7 @@
 ﻿@model Pedidos360.Models.Producto
 @{
     ViewData["Title"] = "Editar Producto";
+    var esAdmin = User.IsInRole("Admin");
 }
 
 <h1 class="page-title">Editar producto</h1>
@@ -17,6 +18,7 @@
             <span asp-validation-for="Nombre" class="text-danger"></span>
         </div>
 
+
         <div class="mb-3">
             <label asp-for="CategoriaId" class="form-label">Categoría</label>
             <select asp-for="CategoriaId" asp-items="ViewBag.Categorias" class="form-select">
@@ -24,6 +26,7 @@
             </select>
             <span asp-validation-for="CategoriaId" class="text-danger"></span>
         </div>
+
 
         <div class="mb-3">
             <label asp-for="Precio" class="form-label">Precio</label>

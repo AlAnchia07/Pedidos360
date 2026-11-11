@@ -25,12 +25,14 @@
     </div>
 </form>
 
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">
-        Registrar nuevo pedido
-    </a>
-</p>
+@if (User.IsInRole("Admin") || User.IsInRole("Ventas"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">
+            Registrar nuevo pedido
+        </a>
+    </p>
+}
 
 <table class="table table-striped table-hover">
     <thead>
@@ -58,10 +60,8 @@
                 <td>@pedido.Total.ToString("C2")</td>
                 <td>@pedido.Estado</td>
                 <td>
-                    <a asp-action="Details"
-                       asp-route-id="@pedido.Id"
-                       class="btn btn-info btn-sm">
-                        Ver
+                    <a asp-action="Details" asp-route-id="@pedido.Id" class="btn btn-outline-secondary btn-sm btn-icon" title="Ver Detalle">
+                        <i class="bi bi-eye"></i>
                     </a>
                 </td>
             </tr>

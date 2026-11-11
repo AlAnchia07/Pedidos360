@@ -36,15 +36,15 @@
                             <option value="@role" selected="@(user.Role == role)">@role</option>
                         }
                     </select>
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Guardar</button>
+                    <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Guardar"><i class="bi bi-floppy"></i></button>
                 </form>
             </td>
             <td>@(user.IsActive ? "Activo" : "Inactivo")</td>
             <td>
                 <form asp-action="ToggleActive" method="post">
                     <input type="hidden" name="id" value="@user.Id" />
-                    <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-danger" : "btn-outline-success")">
-                        @(user.IsActive ? "Desactivar" : "Activar")
+                        <button type="submit" class="btn btn-sm btn-icon @(user.IsActive ? "btn-danger" : "btn-success")" title="@(user.IsActive ? "Desactivar" : "Activar")">
+                            <i class=" bi @(user.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
                     </button>
                 </form>
             </td>

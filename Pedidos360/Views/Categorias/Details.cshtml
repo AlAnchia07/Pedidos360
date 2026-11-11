@@ -27,6 +27,10 @@
         <p>Esta categoría todavía no tiene productos.</p>
     }
 
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+    }
+    
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
 </div>

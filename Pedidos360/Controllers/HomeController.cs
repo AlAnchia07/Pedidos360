@@ -35,6 +35,7 @@ namespace Pedidos360.Controllers
                     .Take(8)
                     .Select(p => new ProductoBajoStock
                     {
+                        ImagenDatos = p.ImagenDatos,
                         ImagenUrl = p.ImagenUrl,
                         Nombre = p.Nombre,
                         Categoria = _context.Categorias

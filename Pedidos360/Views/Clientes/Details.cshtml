@@ -48,9 +48,14 @@
             <a asp-action="Index" class="btn btn-light border btn-sm">
                 <i class="bi bi-arrow-left"></i> Volver
             </a>
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil-square"></i> Editar Cliente
-            </a>
+
+            @if (User.IsInRole("Admin") || User.IsInRole("Ventas"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                    <i class="bi bi-pencil-square"></i> Editar Cliente
+                </a>
+            }
+            
         </div>
     </div>
 </div>
