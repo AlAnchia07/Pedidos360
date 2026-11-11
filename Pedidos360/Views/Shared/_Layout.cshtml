@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,30 +19,55 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                         
-                       <li class="nav-item">
-                           <a class="nav-link text-dark"
-                           asp-area=""
-                           asp-controller="Clientes"
-                           asp-action="Index">Clientes</a>
-                       </li>
+                       @if (User.Identity?.IsAuthenticated == true)
+                       {
+                           <li class="nav-item">
+                               <a class="nav-link text-dark" asp-controller="Clientes" asp-action="Index">Clientes</a>
+                           </li>
+                           <li class="nav-item">
+                               <a class="nav-link text-dark" asp-controller="Productos" asp-action="Index">Productos</a>
+                           </li>
+                       }
 
-                       <li class="nav-item">
-                           <a class="nav-link text-dark"
-                              asp-area=""
-                              asp-controller="Productos"
-                              asp-action="Index">Productos</a>
-                       </li>
+                       @if (User.IsInRole("Admin"))
+                       {
+                           <li class="nav-item">
+                               <a class="nav-link text-dark" asp-controller="Users" asp-action="Index">Usuarios</a>
+                           </li>
+                       }
 
                         
  
 
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item d-flex align-items-center me-2">
+                                <span class="navbar-text">@User.Identity.Name (@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Ventas") ? "Ventas" : User.IsInRole("Operaciones") ? "Operaciones" : "Sin rol"))</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm mt-1">Cerrar sesión</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

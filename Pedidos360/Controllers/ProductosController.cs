@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Pedidos360.Data;
 using Pedidos360.Models;
+using Pedidos360.Security;
 
 namespace Pedidos360.Controllers;
 
+[Authorize(Roles = RoleNames.AllRoles)]
 public class ProductosController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -73,6 +76,7 @@ public class ProductosController : Controller
         return producto == null ? NotFound() : View(producto);
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     public async Task<IActionResult> Create()
     {
         await CargarCategorias();
@@ -80,6 +84,7 @@ public class ProductosController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleNames.Admin)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Producto producto, IFormFile? imagenFile)
     {
@@ -107,6 +112,7 @@ public class ProductosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -119,6 +125,7 @@ public class ProductosController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleNames.Admin)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Producto producto, IFormFile? imagenFile)
     {
@@ -156,6 +163,7 @@ public class ProductosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -168,6 +176,7 @@ public class ProductosController : Controller
     }
 
     [HttpPost, ActionName("Delete")]
+    [Authorize(Roles = RoleNames.Admin)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
