@@ -1,0 +1,52 @@
+﻿@model IEnumerable<Pedidos360.Models.Categoria>
+@{
+    ViewData["Title"] = "Categorías";
+}
+
+<h1 class="page-title">Categorías</h1>
+<p class="page-subtitle">Administra las categorías de productos.</p>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">Nueva categoría</a>
+    <a asp-controller="Productos" asp-action="Index" class="btn btn-secondary">Volver a productos</a>
+</div>
+
+<div class="panel table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Productos asociados</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var categoria in Model)
+        {
+            <tr>
+                <td>@categoria.Nombre</td>
+                <td>@categoria.Productos.Count</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@categoria.Id" class="btn btn-info btn-sm">Consultar</a>
+                    <a asp-action="Edit" asp-route-id="@categoria.Id" class="btn btn-warning btn-sm">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@categoria.Id" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any())
+    {
+        <p class="text-center text-muted">No hay categorías registradas.</p>
+    }
+</div>

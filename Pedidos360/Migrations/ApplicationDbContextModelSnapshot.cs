@@ -230,7 +230,8 @@ namespace Pedidos360.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -368,6 +369,12 @@ namespace Pedidos360.Migrations
                     b.Property<int>("CategoriaId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ImagenContentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("ImagenDatos")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("ImagenUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -378,14 +385,21 @@ namespace Pedidos360.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<decimal>("Precio")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Stock")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
+
+                    b.Property<int>("StockMinimo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 
@@ -486,12 +500,17 @@ namespace Pedidos360.Migrations
             modelBuilder.Entity("Pedidos360.Models.Producto", b =>
                 {
                     b.HasOne("Pedidos360.Models.Categoria", "Categoria")
-                        .WithMany()
+                        .WithMany("Productos")
                         .HasForeignKey("CategoriaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Categoria");
+                });
+
+            modelBuilder.Entity("Pedidos360.Models.Categoria", b =>
+                {
+                    b.Navigation("Productos");
                 });
 
             modelBuilder.Entity("Pedidos360.Models.Pedido", b =>

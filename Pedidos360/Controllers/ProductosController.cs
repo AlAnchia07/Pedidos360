@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,21 +12,17 @@ namespace Pedidos360.Controllers;
 public class ProductosController : Controller
 {
     private readonly ApplicationDbContext _context;
-   
+
+    private const long MaxImagenBytes = 5 * 1024 * 1024;
 
     public ProductosController(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<IActionResult> Index(
-        string? buscar,
-        int? categoriaId,
-        string? estado)
+    public async Task<IActionResult> Index(string? buscar, int? categoriaId, string? estado)
     {
-        var query = _context.Productos
-            .Include(p => p.Categoria)
-            .AsQueryable();
+        var query = _context.Productos.Include(p => p.Categoria).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(buscar))
             query = query.Where(p => p.Nombre.Contains(buscar));
@@ -39,10 +35,8 @@ public class ProductosController : Controller
         else if (estado == "inactivos")
             query = query.Where(p => !p.Activo);
 
-        // La paginación la hace la vista con JavaScript, por eso se envía la lista completa filtrada
         var productos = await query.OrderBy(p => p.Nombre).ToListAsync();
 
-        // Totales de las tarjetas (de todo el catálogo, sin filtros)
         ViewData["TotalProductos"] = await _context.Productos.CountAsync();
         ViewData["TotalCategorias"] = await _context.Categorias.CountAsync();
         ViewData["TotalActivos"] = await _context.Productos.CountAsync(p => p.Activo);
@@ -51,12 +45,10 @@ public class ProductosController : Controller
         ViewData["BuscarActual"] = buscar;
         ViewData["EstadoActual"] = estado;
         ViewData["CategoriaActual"] = categoriaId;
+
         ViewData["Categorias"] = new SelectList(
             await _context.Categorias.OrderBy(c => c.Nombre).ToListAsync(),
-            "Id",
-            "Nombre",
-            categoriaId
-        );
+            "Id", "Nombre", categoriaId);
 
         return View(productos);
     }
@@ -72,6 +64,29 @@ public class ProductosController : Controller
         return producto == null ? NotFound() : View(producto);
     }
 
+    // Mostrar imagen almacenada en la base de datos
+    [HttpGet]
+    public async Task<IActionResult> Imagen(int id)
+    {
+        var producto = await _context.Productos
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (producto == null) return NotFound();
+
+        if (producto.ImagenDatos != null && producto.ImagenDatos.Length > 0)
+        {
+            return File(
+                producto.ImagenDatos,
+                producto.ImagenContentType ?? "application/octet-stream");
+        }
+
+        if (!string.IsNullOrWhiteSpace(producto.ImagenUrl))
+            return Redirect(producto.ImagenUrl);
+
+        return NotFound();
+    }
+
     [Authorize(Roles = RoleNames.Admin)]
     public async Task<IActionResult> Create()
     {
@@ -84,14 +99,17 @@ public class ProductosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Producto producto, IFormFile? imagenFile)
     {
-        // La imagen se recibe desde imagenFile
         ModelState.Remove(nameof(Producto.ImagenUrl));
+        ModelState.Remove(nameof(Producto.ImagenDatos));
+        ModelState.Remove(nameof(Producto.ImagenContentType));
+
+        if (!await _context.Categorias.AnyAsync(c => c.Id == producto.CategoriaId))
+            ModelState.AddModelError(nameof(producto.CategoriaId), "Seleccione una categoría válida.");
 
         if (imagenFile == null || imagenFile.Length == 0)
-        {
-            ModelState.AddModelError(nameof(Producto.ImagenUrl),
-                "La imagen del producto es obligatoria.");
-        }
+            ModelState.AddModelError("imagenFile", "Debe seleccionar una imagen.");
+        else if (!ImagenValida(imagenFile))
+            ModelState.AddModelError("imagenFile", "Seleccione una imagen JPG, JPEG, PNG o WEBP de máximo 5 MB.");
 
         if (!ModelState.IsValid)
         {
@@ -99,7 +117,9 @@ public class ProductosController : Controller
             return View(producto);
         }
 
-        producto.ImagenUrl = await GuardarImagen(imagenFile!);
+        producto.ImagenDatos = await LeerImagen(imagenFile!);
+        producto.ImagenContentType = ObtenerContentType(imagenFile!);
+        producto.ImagenUrl = string.Empty;
 
         _context.Productos.Add(producto);
         await _context.SaveChangesAsync();
@@ -128,9 +148,26 @@ public class ProductosController : Controller
         if (id != producto.Id) return NotFound();
 
         ModelState.Remove(nameof(Producto.ImagenUrl));
+        ModelState.Remove(nameof(Producto.ImagenDatos));
+        ModelState.Remove(nameof(Producto.ImagenContentType));
+
+        if (!await _context.Categorias.AnyAsync(c => c.Id == producto.CategoriaId))
+            ModelState.AddModelError(nameof(producto.CategoriaId), "Seleccione una categoría válida.");
+
+        if (imagenFile != null && imagenFile.Length > 0 && !ImagenValida(imagenFile))
+            ModelState.AddModelError("imagenFile", "Seleccione una imagen JPG, JPEG, PNG o WEBP de máximo 5 MB.");
 
         if (!ModelState.IsValid)
         {
+            var imagenActual = await _context.Productos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (imagenActual == null) return NotFound();
+
+            producto.ImagenDatos = imagenActual.ImagenDatos;
+            producto.ImagenContentType = imagenActual.ImagenContentType;
+
             await CargarCategorias(producto.CategoriaId);
             return View(producto);
         }
@@ -143,14 +180,14 @@ public class ProductosController : Controller
         productoDb.Precio = producto.Precio;
         productoDb.ImpuestoPorc = producto.ImpuestoPorc;
         productoDb.Stock = producto.Stock;
+        productoDb.StockMinimo = producto.StockMinimo;
         productoDb.Activo = producto.Activo;
 
         if (imagenFile != null && imagenFile.Length > 0)
         {
-            var imagenAnterior = productoDb.ImagenUrl;
-            productoDb.ImagenUrl = await GuardarImagen(imagenFile);
-
-            EliminarImagen(imagenAnterior);
+            productoDb.ImagenDatos = await LeerImagen(imagenFile);
+            productoDb.ImagenContentType = ObtenerContentType(imagenFile);
+            productoDb.ImagenUrl = string.Empty;
         }
 
         await _context.SaveChangesAsync();
@@ -195,59 +232,42 @@ public class ProductosController : Controller
             .ToListAsync();
 
         ViewData["Categorias"] = new SelectList(
-            categorias,
-            "Id",
-            "Nombre",
-            categoriaSeleccionada
-        );
+            categorias, "Id", "Nombre", categoriaSeleccionada);
     }
 
-    private async Task<string> GuardarImagen(IFormFile imagenFile)
+    private static bool ImagenValida(IFormFile archivo)
     {
-        var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        var extension = Path.GetExtension(imagenFile.FileName).ToLowerInvariant();
+        var extensiones = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
 
-        if (!extensionesPermitidas.Contains(extension))
+        var tipos = new[]
         {
-            throw new InvalidOperationException(
-                "La imagen debe ser JPG, JPEG, PNG o WEBP.");
-        }
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        };
 
-        var carpeta = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            "images",
-            "productos"
-        );
-
-        Directory.CreateDirectory(carpeta);
-
-        var nombreArchivo = $"{Guid.NewGuid():N}{extension}";
-        var rutaCompleta = Path.Combine(carpeta, nombreArchivo);
-
-        await using var stream = new FileStream(rutaCompleta, FileMode.Create);
-        await imagenFile.CopyToAsync(stream);
-
-        return $"/images/productos/{nombreArchivo}";
+        return archivo.Length > 0
+            && archivo.Length <= MaxImagenBytes
+            && extensiones.Contains(extension)
+            && tipos.Contains(archivo.ContentType.ToLowerInvariant());
     }
 
-    private void EliminarImagen(string? imagenUrl)
+    private static async Task<byte[]> LeerImagen(IFormFile archivo)
     {
-        if (string.IsNullOrWhiteSpace(imagenUrl)) return;
+        await using var memory = new MemoryStream();
+        await archivo.CopyToAsync(memory);
+        return memory.ToArray();
+    }
 
-        var rutaRelativa = imagenUrl
-            .TrimStart('/')
-            .Replace('/', Path.DirectorySeparatorChar);
-
-        var rutaCompleta = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            rutaRelativa
-        );
-
-        if (System.IO.File.Exists(rutaCompleta))
+    private static string ObtenerContentType(IFormFile archivo)
+    {
+        return Path.GetExtension(archivo.FileName).ToLowerInvariant() switch
         {
-            System.IO.File.Delete(rutaCompleta);
-        }
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
     }
 }

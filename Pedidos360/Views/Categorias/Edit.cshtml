@@ -1,0 +1,23 @@
+﻿@model Pedidos360.Models.Categoria
+@{
+    ViewData["Title"] = "Editar categoría";
+}
+
+<h1 class="page-title">Editar categoría</h1>
+
+<div class="panel p-4">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label">Nombre de la categoría</label>
+            <input asp-for="Nombre" class="form-control" maxlength="100" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

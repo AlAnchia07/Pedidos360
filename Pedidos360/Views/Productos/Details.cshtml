@@ -1,32 +1,46 @@
-@model Pedidos360.Models.Producto
-
+﻿@model Pedidos360.Models.Producto
 @{
     ViewData["Title"] = "Detalle Producto";
 }
 
-<div class="container mt-4">
-    <h1>Detalle producto</h1>
+<h1 class="page-title">Detalle del producto</h1>
 
-    <div class="card mb-3">
-        <div class="row g-0">
-            <div class="col-md-4">
-                @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
-                {
-                    <img src="@Model.ImagenUrl" class="img-fluid rounded-start" alt="" />
-                }
-            </div>
-            <div class="col-md-8">
-                <div class="card-body">
-                    <h5 class="card-title">@Model.Nombre</h5>
-                    <p class="card-text"><strong>Categoría:</strong> @Model.Categoria?.Nombre</p>
-                    <p class="card-text"><strong>Precio:</strong> @Model.Precio.ToString("C", System.Globalization.CultureInfo.CurrentCulture)</p>
-                    <p class="card-text"><strong>Impuesto %:</strong> @Model.ImpuestoPorc</p>
-                    <p class="card-text"><strong>Stock:</strong> @Model.Stock</p>
-                    <p class="card-text"><strong>Activo:</strong> @(Model.Activo ? "Sí" : "No")</p>
+<div class="panel p-4">
+    <div class="row g-4">
+        <div class="col-md-4">
+            @if (Model.ImagenDatos != null || !string.IsNullOrWhiteSpace(Model.ImagenUrl))
+            {
+                <img src="@Url.Action("Imagen", "Productos", new { id = Model.Id })"
+                     alt="@Model.Nombre" class="img-fluid rounded" />
+            }
+            else
+            {
+                <p class="text-muted">Sin imagen disponible.</p>
+            }
+        </div>
+
+        <div class="col-md-8">
+            <h3>@Model.Nombre</h3>
+            <p><strong>Categoría:</strong> @Model.Categoria?.Nombre</p>
+            <p><strong>Precio:</strong> @Model.Precio.ToString("C2")</p>
+            <p><strong>Impuesto:</strong> @Model.ImpuestoPorc%</p>
+            <p><strong>Stock actual:</strong> @Model.Stock</p>
+            <p><strong>Stock mínimo:</strong> @Model.StockMinimo</p>
+            <p>
+                <strong>Estado:</strong>
+                @(Model.Activo ? "Activo" : "Inactivo")
+            </p>
+
+            @if (Model.Stock <= Model.StockMinimo)
+            {
+                <div class="alert alert-warning">
+                    El producto está en su nivel mínimo de inventario o por debajo.
                 </div>
-            </div>
+            }
         </div>
     </div>
+
+    <hr />
 
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
     <a asp-action="Index" class="btn btn-secondary">Volver</a>

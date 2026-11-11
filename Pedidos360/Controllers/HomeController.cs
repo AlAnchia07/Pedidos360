@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +39,7 @@ namespace Pedidos360.Controllers
                         Nombre = p.Nombre,
                         Categoria = _context.Categorias
                             .Where(c => c.Id == p.CategoriaId)
-                            .Select(c => c.Nombre).FirstOrDefault() ?? "—",
+                            .Select(c => c.Nombre).FirstOrDefault() ?? "â€”",
                         Stock = p.Stock,
                         Activo = p.Activo
                     })
