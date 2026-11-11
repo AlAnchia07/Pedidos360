@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pedidos360.Data;
+using Pedidos360.Security;
 
 namespace Pedidos360.Controllers.Api
 {
     [Route("api/productos")]
     [ApiController]
-    [Authorize] // Requerir autenticación como mínimo
+    [Authorize(Roles = RoleNames.AllRoles)]
     public class ProductosApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
